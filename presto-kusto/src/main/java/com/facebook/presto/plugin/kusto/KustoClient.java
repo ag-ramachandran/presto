@@ -39,9 +39,9 @@ public class KustoClient
     private static final Joiner DOT_JOINER = Joiner.on(".");
 
     @Inject
-    public KustoClient(JdbcConnectorId connectorId, BaseJdbcConfig config)
+    public KustoClient(JdbcConnectorId connectorId, KustoConnectionConfig config)
     {
-        super(connectorId, config, "\"", new DriverConnectionFactory(new SQLServerDriver(), config));
+        super(connectorId, config, "\"", new KustoDriverConnectionFactory(config));
     }
 
     private static String singleQuote(String... objects)

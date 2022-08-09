@@ -14,10 +14,11 @@
 package com.facebook.presto.plugin.kusto;
 
 import com.facebook.airlift.configuration.Config;
+import com.facebook.presto.plugin.jdbc.BaseJdbcConfig;
 
 import javax.validation.constraints.NotNull;
 
-public class KustoConnectionConfig
+public class KustoConnectionConfig extends BaseJdbcConfig
 {
     private String appId;
     private String appKey;
