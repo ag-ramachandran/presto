@@ -1,3 +1,16 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.facebook.presto.plugin.kusto;
 
 import com.facebook.presto.plugin.jdbc.ConnectionFactory;
@@ -22,14 +35,16 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
 public class KustoDriverConnectionFactory
-        implements ConnectionFactory {
+        implements ConnectionFactory
+{
     private final String hostName;
     private final Properties connectionProperties;
     private final Optional<String> appId;
     private final Optional<String> appKey;
     private final Optional<String> tenantId;
 
-    public KustoDriverConnectionFactory(KustoConnectionConfig config) {
+    public KustoDriverConnectionFactory(KustoConnectionConfig config)
+    {
         this(
                 config.getHostName(),
                 Optional.ofNullable(config.getAppId()),
@@ -38,7 +53,9 @@ public class KustoDriverConnectionFactory
                 basicConnectionProperties(config));
     }
 
-    public KustoDriverConnectionFactory(String hostName, Optional<String> appId, Optional<String> appKey, Optional<String> tenantId, Properties connectionProperties) {
+    public KustoDriverConnectionFactory(String hostName, Optional<String> appId, Optional<String> appKey, Optional<String> tenantId,
+                                        Properties connectionProperties)
+    {
         this.hostName = requireNonNull(hostName, "connectionUrl is null");
         this.connectionProperties = new Properties();
         this.connectionProperties.putAll(requireNonNull(connectionProperties, "connectionProperties is null"));
@@ -47,7 +64,8 @@ public class KustoDriverConnectionFactory
         this.tenantId = requireNonNull(tenantId, "tenantId is null");
     }
 
-    public static Properties basicConnectionProperties(KustoConnectionConfig config) {
+    public static Properties basicConnectionProperties(KustoConnectionConfig config)
+    {
         Properties connectionProperties = new Properties();
         if (config.getAppId() != null) {
             connectionProperties.setProperty("app-id", config.getAppId());
@@ -58,7 +76,9 @@ public class KustoDriverConnectionFactory
         return connectionProperties;
     }
 
-    private static void setConnectionProperty(Properties connectionProperties, Map<String, String> extraCredentials, String credentialName, String propertyName) {
+    private static void setConnectionProperty(Properties connectionProperties, Map<String, String> extraCredentials, String credentialName,
+                                              String propertyName)
+    {
         String value = extraCredentials.get(credentialName);
         if (value != null) {
             connectionProperties.setProperty(propertyName, value);
@@ -67,18 +87,25 @@ public class KustoDriverConnectionFactory
 
     @Override
     public Connection openConnection(JdbcIdentity identity)
-            throws SQLException {
+            throws SQLException
+    {
         Properties updatedConnectionProperties;
         if (appId.isPresent() || appKey.isPresent()) {
             updatedConnectionProperties = new Properties();
             updatedConnectionProperties.putAll(connectionProperties);
-            appId.ifPresent(credentialName -> setConnectionProperty(updatedConnectionProperties, identity.getExtraCredentials(), credentialName, "appId"));
-            appKey.ifPresent(credentialName -> setConnectionProperty(updatedConnectionProperties, identity.getExtraCredentials(), credentialName, "appKey"));
-            tenantId.ifPresent(credentialName -> setConnectionProperty(updatedConnectionProperties, identity.getExtraCredentials(), credentialName, "tenantId"));
-        } else {
+            appId.ifPresent(
+                    credentialName -> setConnectionProperty(updatedConnectionProperties, identity.getExtraCredentials(), credentialName,
+                            "appId"));
+            appKey.ifPresent(
+                    credentialName -> setConnectionProperty(updatedConnectionProperties, identity.getExtraCredentials(), credentialName,
+                            "appKey"));
+            tenantId.ifPresent(
+                    credentialName -> setConnectionProperty(updatedConnectionProperties, identity.getExtraCredentials(), credentialName,
+                            "tenantId"));
+        }
+        else {
             updatedConnectionProperties = connectionProperties;
         }
-
         Connection connection = null;
         try {
             ConfidentialClientApplication app = ConfidentialClientApplication.builder(
@@ -91,7 +118,6 @@ public class KustoDriverConnectionFactory
                     .build();
             CompletableFuture<IAuthenticationResult> future = app.acquireToken(clientCredentialParam);
             IAuthenticationResult authResult = future.get();
-
             SQLServerDataSource ds = new SQLServerDataSource();
             ds.setServerName("<your cluster DNS name>");
             ds.setDatabaseName("<your database name>");
@@ -100,8 +126,8 @@ public class KustoDriverConnectionFactory
             connection = ds.getConnection();
             checkState(connection != null, "Driver returned null connection");
             return connection;
-
-        } catch (MalformedURLException | ExecutionException | InterruptedException e) {
+        }
+        catch (MalformedURLException | ExecutionException | InterruptedException e) {
             checkState(connection != null, "Driver returned null connection");
             throw new RuntimeException(e);
         }
