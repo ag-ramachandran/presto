@@ -25,8 +25,6 @@ import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -39,90 +37,76 @@ public class KustoDriverConnectionFactory
 {
     private final String hostName;
     private final Properties connectionProperties;
-    private final Optional<String> appId;
-    private final Optional<String> appKey;
-    private final Optional<String> tenantId;
+    private final String appId;
+    private final String appKey;
+    private final String tenantId;
+    private final String database;
 
     public KustoDriverConnectionFactory(KustoConnectionConfig config)
     {
         this(
                 config.getHostName(),
-                Optional.ofNullable(config.getAppId()),
-                Optional.ofNullable(config.getAppKey()),
-                Optional.ofNullable(config.getTenantId()),
+                config.getAppId(),
+                config.getAppKey(),
+                config.getTenantId(),
+                config.getDatabase(),
                 basicConnectionProperties(config));
     }
 
-    public KustoDriverConnectionFactory(String hostName, Optional<String> appId, Optional<String> appKey, Optional<String> tenantId,
-                                        Properties connectionProperties)
+    public KustoDriverConnectionFactory(String hostName, String appId, String appKey, String tenantId,
+                                        String database, Properties connectionProperties)
     {
-        this.hostName = requireNonNull(hostName, "connectionUrl is null");
-        this.connectionProperties = new Properties();
-        this.connectionProperties.putAll(requireNonNull(connectionProperties, "connectionProperties is null"));
+        this.hostName = requireNonNull(hostName, "hostName is null");
         this.appId = requireNonNull(appId, "appId is null");
         this.appKey = requireNonNull(appKey, "appKey is null");
         this.tenantId = requireNonNull(tenantId, "tenantId is null");
+        this.database = requireNonNull(database, "database is null");
+        this.connectionProperties = new Properties();
+        this.connectionProperties.putAll(requireNonNull(connectionProperties, "connectionProperties is null"));
     }
 
     public static Properties basicConnectionProperties(KustoConnectionConfig config)
     {
         Properties connectionProperties = new Properties();
+        if (config.getHostName() != null) {
+            connectionProperties.setProperty("hostName", config.getHostName());
+        }
         if (config.getAppId() != null) {
-            connectionProperties.setProperty("app-id", config.getAppId());
+            connectionProperties.setProperty("appKey", config.getAppId());
         }
         if (config.getAppKey() != null) {
-            connectionProperties.setProperty("app-key", config.getAppKey());
+            connectionProperties.setProperty("appKey", config.getAppKey());
+        }
+        if (config.getTenantId() != null) {
+            connectionProperties.setProperty("tenantId", config.getTenantId());
+        }
+        if (config.getDatabase() != null) {
+            connectionProperties.setProperty("database", config.getDatabase());
         }
         return connectionProperties;
-    }
-
-    private static void setConnectionProperty(Properties connectionProperties, Map<String, String> extraCredentials, String credentialName,
-                                              String propertyName)
-    {
-        String value = extraCredentials.get(credentialName);
-        if (value != null) {
-            connectionProperties.setProperty(propertyName, value);
-        }
     }
 
     @Override
     public Connection openConnection(JdbcIdentity identity)
             throws SQLException
     {
-        Properties updatedConnectionProperties;
-        if (appId.isPresent() || appKey.isPresent()) {
-            updatedConnectionProperties = new Properties();
-            updatedConnectionProperties.putAll(connectionProperties);
-            appId.ifPresent(
-                    credentialName -> setConnectionProperty(updatedConnectionProperties, identity.getExtraCredentials(), credentialName,
-                            "appId"));
-            appKey.ifPresent(
-                    credentialName -> setConnectionProperty(updatedConnectionProperties, identity.getExtraCredentials(), credentialName,
-                            "appKey"));
-            tenantId.ifPresent(
-                    credentialName -> setConnectionProperty(updatedConnectionProperties, identity.getExtraCredentials(), credentialName,
-                            "tenantId"));
-        }
-        else {
-            updatedConnectionProperties = connectionProperties;
-        }
         Connection connection = null;
         try {
             ConfidentialClientApplication app = ConfidentialClientApplication.builder(
-                            updatedConnectionProperties.getProperty("appId"),
-                            ClientCredentialFactory.createFromSecret(updatedConnectionProperties.getProperty("appKey")))
-                    .authority(String.format("https://login.microsoftonline.com/%s", updatedConnectionProperties.getProperty("tenantId")))
+                            connectionProperties.getProperty("appId"),
+                            ClientCredentialFactory.createFromSecret(connectionProperties.getProperty("appKey")))
+                    .authority(String.format("https://login.microsoftonline.com/%s", connectionProperties.getProperty("tenantId")))
                     .build();
             ClientCredentialParameters clientCredentialParam = ClientCredentialParameters.builder(
-                            Collections.singleton("scope"))
+                            Collections.singleton(String.format("https://%s/.default", connectionProperties.getProperty("hostName"))))
                     .build();
             CompletableFuture<IAuthenticationResult> future = app.acquireToken(clientCredentialParam);
             IAuthenticationResult authResult = future.get();
             SQLServerDataSource ds = new SQLServerDataSource();
-            ds.setServerName("<your cluster DNS name>");
-            ds.setDatabaseName("<your database name>");
+            ds.setServerName(connectionProperties.getProperty("hostName"));
+            ds.setDatabaseName(connectionProperties.getProperty("database"));
             ds.setAccessToken(authResult.accessToken());
-            ds.setHostNameInCertificate("*.kusto.windows.net");
+            ds.setHostNameInCertificate("*.z9trident.dev.kusto.windows.net");
             connection = ds.getConnection();
             checkState(connection != null, "Driver returned null connection");
             return connection;

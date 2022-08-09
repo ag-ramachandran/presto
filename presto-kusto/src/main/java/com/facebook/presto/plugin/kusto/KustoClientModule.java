@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.plugin.kusto;
 
-import com.facebook.presto.plugin.jdbc.BaseJdbcConfig;
 import com.facebook.presto.plugin.jdbc.JdbcClient;
 import com.google.inject.Binder;
 import com.google.inject.Module;
@@ -28,6 +27,6 @@ public class KustoClientModule
     public void configure(Binder binder)
     {
         binder.bind(JdbcClient.class).to(KustoClient.class).in(Scopes.SINGLETON);
-        configBinder(binder).bindConfig(BaseJdbcConfig.class);
+        configBinder(binder).bindConfig(KustoConnectionConfig.class);
     }
 }

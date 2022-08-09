@@ -23,13 +23,14 @@ public class KustoConnectionConfig
     private String appKey;
     private String tenantId;
     private String hostName;
+    private String database;
     @NotNull
     public String getAppId()
     {
         return appId;
     }
 
-    @Config("kusto.app-id")
+    @Config("kusto.appId")
     public KustoConnectionConfig setAppId(String appId)
     {
         this.appId = appId;
@@ -41,7 +42,7 @@ public class KustoConnectionConfig
         return appKey;
     }
 
-    @Config("kusto.app-key")
+    @Config("kusto.appKey")
     public KustoConnectionConfig setAppKey(String appKey)
     {
         this.appKey = appKey;
@@ -52,7 +53,7 @@ public class KustoConnectionConfig
     {
         return tenantId;
     }
-    @Config("kusto.tenant-id")
+    @Config("kusto.tenantId")
     public KustoConnectionConfig setTenantId(String tenantId)
     {
         this.tenantId = tenantId;
@@ -62,10 +63,21 @@ public class KustoConnectionConfig
     {
         return this.hostName;
     }
-    @Config("host-name")
+    @Config("hostName")
     public KustoConnectionConfig setHostName(String hostName)
     {
         this.hostName = hostName;
+        return this;
+    }
+
+    public @NotNull String getDatabase()
+    {
+        return this.database;
+    }
+    @Config("hostName")
+    public KustoConnectionConfig setDatabase(String database)
+    {
+        this.database = hostName;
         return this;
     }
 }
