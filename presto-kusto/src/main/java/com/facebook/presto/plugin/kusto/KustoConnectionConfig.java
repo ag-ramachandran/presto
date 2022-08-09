@@ -63,7 +63,7 @@ public class KustoConnectionConfig
     {
         return this.hostName;
     }
-    @Config("hostName")
+    @Config("kusto.hostName")
     public KustoConnectionConfig setHostName(String hostName)
     {
         this.hostName = hostName;
@@ -74,10 +74,10 @@ public class KustoConnectionConfig
     {
         return this.database;
     }
-    @Config("hostName")
+    @Config("kusto.database")
     public KustoConnectionConfig setDatabase(String database)
     {
-        this.database = hostName;
+        this.database = database;
         return this;
     }
 }
