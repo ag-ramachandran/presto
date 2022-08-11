@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.plugin.sqlserver;
 
+import com.facebook.airlift.log.Logger;
 import com.facebook.presto.plugin.jdbc.BaseJdbcClient;
 import com.facebook.presto.plugin.jdbc.BaseJdbcConfig;
 import com.facebook.presto.plugin.jdbc.DriverConnectionFactory;
@@ -23,12 +24,18 @@ import com.facebook.presto.plugin.jdbc.JdbcTableHandle;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 
 import javax.inject.Inject;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 import static com.facebook.presto.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
 import static java.lang.String.format;
@@ -36,6 +43,8 @@ import static java.lang.String.format;
 public class SqlServerClient
         extends BaseJdbcClient
 {
+    private static final Logger log = Logger.get(SqlServerClient.class);
+
     private static final Joiner DOT_JOINER = Joiner.on(".");
 
     @Inject
@@ -44,6 +53,52 @@ public class SqlServerClient
         super(connectorId, config, "\"", new DriverConnectionFactory(new SQLServerDriver(), config));
     }
 
+    @Override
+    protected Collection<String> listSchemas(Connection connection)
+    {
+        
+        try (ResultSet resultSet = connection.getMetaData().getSchemas()) {
+            log.warn("===================================IN RESULT SET==================================="+ connection.getCatalog());
+            ImmutableSet.Builder<String> schemaNames = ImmutableSet.builder();
+            while (resultSet.next()) {
+                String schemaName = resultSet.getString("TABLE_SCHEM");
+                // skip internal schemas
+                log.warn("===================================IN RESULT SET 2==================================="+ schemaName);
+                if (!schemaName.equalsIgnoreCase("information_schema")) {
+                    schemaNames.add(schemaName);
+                }
+            }
+            return schemaNames.build();
+        }
+        catch (SQLException e) {
+            throw new PrestoException(JDBC_ERROR, e);
+        }
+    }
+
+    @Override
+    public List<SchemaTableName> getTableNames(JdbcIdentity identity, Optional<String> schema)
+    {
+        try (Connection connection = connectionFactory.openConnection(identity)) {
+            Optional<String> remoteSchema = schema.map(schemaName -> {
+                log.warn("******************************getTableNames******************************"+ schemaName);
+                return toRemoteSchemaName(identity, connection, schemaName);
+            });
+            try (ResultSet resultSet = getTables(connection, remoteSchema, Optional.empty())) {
+                ImmutableList.Builder<SchemaTableName> list = ImmutableList.builder();
+                while (resultSet.next()) {
+                    String tableSchema = getTableSchemaName(resultSet);
+                    String tableName = resultSet.getString("TABLE_NAME");
+                    list.add(new SchemaTableName(tableSchema.toLowerCase(), tableName.toLowerCase()));
+                }
+                return list.build();
+            }
+        }
+        catch (SQLException e) {
+            throw new PrestoException(JDBC_ERROR, e);
+        }
+    }
+
+    
     @Override
     protected void renameTable(JdbcIdentity identity, String catalogName, SchemaTableName oldTable, SchemaTableName newTable)
     {
