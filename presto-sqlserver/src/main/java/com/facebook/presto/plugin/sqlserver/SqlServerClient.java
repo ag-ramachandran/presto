@@ -77,7 +77,7 @@ public class SqlServerClient
     public List<SchemaTableName> getTableNames(JdbcIdentity identity, Optional<String> schema)
     {
         try (Connection connection = connectionFactory.openConnection(identity)) {
-            connection.setCatalog("sdktestsdb");            
+            connection.setCatalog("sdktestsdb");
             Optional<String> remoteSchema = schema.map(schemaName -> {
                 //log.warn("******************************getTableNames******************************" + schemaName);
                 return toRemoteSchemaName(identity, connection, schemaName);
@@ -87,7 +87,7 @@ public class SqlServerClient
                 while (resultSet.next()) {
                     String tableSchema = getTableSchemaName(resultSet);
                     String tableName = resultSet.getString("TABLE_NAME");
-                    log.warn("Remote Schema name" + remoteSchema.orElse("default") + ": table name" + tableName + " Table schema " + tableSchema);                    
+                    log.warn("Remote Schema name" + remoteSchema.orElse("default") + ": table name" + tableName + " Table schema " + tableSchema);
                     list.add(new SchemaTableName(tableSchema.toLowerCase(java.util.Locale.ENGLISH), tableName.toLowerCase(java.util.Locale.ENGLISH)));
                 }
                 return list.build();
