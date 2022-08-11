@@ -31,7 +31,6 @@ import javax.inject.Inject;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
 import static com.facebook.presto.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
 import static java.lang.String.format;
