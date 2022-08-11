@@ -170,7 +170,7 @@ public class SqlServerClient
     {
         connection.setCatalog("sdktestsdb");
         connection.setSchema("sdktestsdb");
-        log.warn("******************************Preparing It******************************" + sql);        
+        log.warn("******************************Preparing It******************************" + sql);
         return connection.prepareStatement(sql);
-    }    
+    }
 }
