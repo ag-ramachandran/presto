@@ -56,6 +56,8 @@ public class SqlServerClient
     @Override
     protected Collection<String> listSchemas(Connection connection)
     {
+        connection.setCatalog("sdktestsdb");
+        //connection.setSchema("sdktestsdb");
         try (ResultSet resultSet = connection.getMetaData().getSchemas()) {
             log.warn("===================================IN RESULT SET===================================" + connection.getCatalog());
             ImmutableSet.Builder<String> schemaNames = ImmutableSet.builder();
