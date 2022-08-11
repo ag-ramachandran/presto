@@ -105,4 +105,58 @@ public class SqlServerClient
     {
         return "\'" + literal + "\'";
     }
+    @Override
+    protected Collection<String> listSchemas(Connection connection)
+    {
+
+        try {
+            connection.setCatalog("sdktestsdb");
+            connection.setSchema("sdktestsdb");
+        }
+        catch (SQLException e) {
+            throw new PrestoException(JDBC_ERROR, e);
+        }
+        try (ResultSet resultSet = connection.getMetaData().getSchemas()) {
+            ImmutableSet.Builder<String> schemaNames = ImmutableSet.builder();
+            while (resultSet.next()) {
+                String schemaName = resultSet.getString("TABLE_SCHEM");
+                // skip internal schemas
+                log.warn("===================================IN RESULT SET 2===================================" + schemaName);
+                if (!schemaName.equalsIgnoreCase("information_schema")) {
+                    schemaNames.add(schemaName);
+                }
+            }
+            return schemaNames.build();
+        }
+        catch (SQLException e) {
+            throw new PrestoException(JDBC_ERROR, e);
+        }
+    }
+
+    @Override
+    public List<SchemaTableName> getTableNames(JdbcIdentity identity, Optional<String> schema)
+    {
+        try (Connection connection = connectionFactory.openConnection(identity)) {
+            connection.setCatalog("sdktestsdb");
+            connection.setSchema("sdktestsdb");
+            Optional<String> remoteSchema = schema.map(schemaName -> {
+                //log.warn("******************************getTableNames******************************" + schemaName);
+                return toRemoteSchemaName(identity, connection, schemaName);
+            });
+            try (ResultSet resultSet = getTables(connection, remoteSchema, Optional.empty())) {
+                ImmutableList.Builder<SchemaTableName> list = ImmutableList.builder();
+                while (resultSet.next()) {
+                    String tableSchema = getTableSchemaName(resultSet);
+                    String tableName = resultSet.getString("TABLE_NAME");
+                    log.warn("Remote Schema name" + remoteSchema.orElse("default") + ": table name" + tableName + " Table schema " + tableSchema);
+                    list.add(new SchemaTableName(tableSchema.toLowerCase(java.util.Locale.ENGLISH), tableName.toLowerCase(java.util.Locale.ENGLISH)));
+                }
+                return list.build();
+            }
+        }
+        catch (SQLException e) {
+            throw new PrestoException(JDBC_ERROR, e);
+        }
+    }
+
 }
