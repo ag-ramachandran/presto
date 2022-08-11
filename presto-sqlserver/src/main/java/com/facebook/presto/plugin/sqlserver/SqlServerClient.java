@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.plugin.sqlserver;
 
+import com.facebook.airlift.log.Logger;
 import com.facebook.presto.plugin.jdbc.BaseJdbcClient;
 import com.facebook.presto.plugin.jdbc.BaseJdbcConfig;
 import com.facebook.presto.plugin.jdbc.DriverConnectionFactory;
