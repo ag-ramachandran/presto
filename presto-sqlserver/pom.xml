@@ -20,7 +20,10 @@
             <groupId>com.facebook.presto</groupId>
             <artifactId>presto-base-jdbc</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.facebook.airlift</groupId>
+            <artifactId>log</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
