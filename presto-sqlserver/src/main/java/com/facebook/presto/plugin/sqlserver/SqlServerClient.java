@@ -56,14 +56,13 @@ public class SqlServerClient
     @Override
     protected Collection<String> listSchemas(Connection connection)
     {
-        
         try (ResultSet resultSet = connection.getMetaData().getSchemas()) {
-            log.warn("===================================IN RESULT SET==================================="+ connection.getCatalog());
+            log.warn("===================================IN RESULT SET==================================="+connection.getCatalog());
             ImmutableSet.Builder<String> schemaNames = ImmutableSet.builder();
             while (resultSet.next()) {
                 String schemaName = resultSet.getString("TABLE_SCHEM");
                 // skip internal schemas
-                log.warn("===================================IN RESULT SET 2==================================="+ schemaName);
+                log.warn("===================================IN RESULT SET 2==================================="+schemaName);
                 if (!schemaName.equalsIgnoreCase("information_schema")) {
                     schemaNames.add(schemaName);
                 }
@@ -80,7 +79,7 @@ public class SqlServerClient
     {
         try (Connection connection = connectionFactory.openConnection(identity)) {
             Optional<String> remoteSchema = schema.map(schemaName -> {
-                log.warn("******************************getTableNames******************************"+ schemaName);
+                log.warn("******************************getTableNames******************************"+schemaName);
                 return toRemoteSchemaName(identity, connection, schemaName);
             });
             try (ResultSet resultSet = getTables(connection, remoteSchema, Optional.empty())) {
