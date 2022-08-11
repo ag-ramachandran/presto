@@ -25,12 +25,18 @@ import com.facebook.presto.plugin.jdbc.JdbcTableHandle;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 
 import javax.inject.Inject;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 import static com.facebook.presto.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
 import static java.lang.String.format;
