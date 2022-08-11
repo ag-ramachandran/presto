@@ -108,7 +108,6 @@ public class SqlServerClient
     @Override
     protected Collection<String> listSchemas(Connection connection)
     {
-
         try {
             connection.setCatalog("sdktestsdb");
             connection.setSchema("sdktestsdb");
@@ -158,5 +157,4 @@ public class SqlServerClient
             throw new PrestoException(JDBC_ERROR, e);
         }
     }
-
 }
