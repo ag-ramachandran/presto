@@ -32,6 +32,7 @@ import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 import javax.inject.Inject;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -90,7 +91,7 @@ public class SqlServerClient
     {
         Connection connection = connectionFactory.openConnection(identity);
         try {
-            log.info("Set the database");
+            log.info("======================================Set the database======================================");
             connection.setReadOnly(true);
             connection.setSchema("sdktestsdb");
             connection.setCatalog("sdktestsdb");
@@ -163,4 +164,13 @@ public class SqlServerClient
             throw new PrestoException(JDBC_ERROR, e);
         }
     }
+    @Override
+    public PreparedStatement getPreparedStatement(Connection connection, String sql)
+            throws SQLException
+    {
+        connection.setCatalog("sdktestsdb");
+        connection.setSchema("sdktestsdb");
+        log.warn("******************************Preparing It******************************" + sql);        
+        return connection.prepareStatement(sql);
+    }    
 }
