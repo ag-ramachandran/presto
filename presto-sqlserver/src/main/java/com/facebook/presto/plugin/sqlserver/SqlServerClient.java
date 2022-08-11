@@ -56,7 +56,12 @@ public class SqlServerClient
     @Override
     protected Collection<String> listSchemas(Connection connection)
     {
-        connection.setCatalog("sdktestsdb");
+        try {
+            connection.setCatalog("sdktestsdb");
+        }
+        catch (SQLException e) {
+            throw new PrestoException(JDBC_ERROR, e);
+        }
         //connection.setSchema("sdktestsdb");
         try (ResultSet resultSet = connection.getMetaData().getSchemas()) {
             log.warn("===================================IN RESULT SET===================================" + connection.getCatalog());
