@@ -96,7 +96,6 @@ public class SqlServerClient
             throw new PrestoException(JDBC_ERROR, e);
         }
     }
-    
     @Override
     protected void renameTable(JdbcIdentity identity, String catalogName, SchemaTableName oldTable, SchemaTableName newTable)
     {
