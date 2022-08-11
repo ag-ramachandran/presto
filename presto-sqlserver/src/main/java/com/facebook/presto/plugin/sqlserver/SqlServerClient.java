@@ -30,6 +30,7 @@ import javax.inject.Inject;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 import static com.facebook.presto.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
 import static java.lang.String.format;
@@ -37,6 +38,8 @@ import static java.lang.String.format;
 public class SqlServerClient
         extends BaseJdbcClient
 {
+    private static final Logger log = Logger.get(SqlServerClient.class);
+
     private static final Joiner DOT_JOINER = Joiner.on(".");
 
     @Inject
@@ -81,6 +84,7 @@ public class SqlServerClient
     {
         Connection connection = connectionFactory.openConnection(identity);
         try {
+            log.info("Set the database");
             connection.setReadOnly(true);
             connection.setSchema("sdktestsdb");
             connection.setCatalog("sdktestsdb");
