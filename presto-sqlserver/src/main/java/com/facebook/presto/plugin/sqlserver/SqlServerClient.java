@@ -19,6 +19,7 @@ import com.facebook.presto.plugin.jdbc.DriverConnectionFactory;
 import com.facebook.presto.plugin.jdbc.JdbcColumnHandle;
 import com.facebook.presto.plugin.jdbc.JdbcConnectorId;
 import com.facebook.presto.plugin.jdbc.JdbcIdentity;
+import com.facebook.presto.plugin.jdbc.JdbcSplit;
 import com.facebook.presto.plugin.jdbc.JdbcTableHandle;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
