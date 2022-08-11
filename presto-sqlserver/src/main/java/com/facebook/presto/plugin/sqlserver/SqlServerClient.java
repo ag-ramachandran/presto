@@ -87,7 +87,7 @@ public class SqlServerClient
                 while (resultSet.next()) {
                     String tableSchema = getTableSchemaName(resultSet);
                     String tableName = resultSet.getString("TABLE_NAME");
-                    list.add(new SchemaTableName(tableSchema.toLowerCase(), tableName.toLowerCase()));
+                    list.add(new SchemaTableName(tableSchema.toLowerCase(java.util.Locale.ENGLISH), tableName.toLowerCase(java.util.Locale.ENGLISH)));
                 }
                 return list.build();
             }
