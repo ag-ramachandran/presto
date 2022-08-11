@@ -56,15 +56,7 @@ public class SqlServerClient
     @Override
     protected Collection<String> listSchemas(Connection connection)
     {
-        try {
-            connection.setCatalog("sdktestsdb");
-        }
-        catch (SQLException e) {
-            throw new PrestoException(JDBC_ERROR, e);
-        }
-        //connection.setSchema("sdktestsdb");
         try (ResultSet resultSet = connection.getMetaData().getSchemas()) {
-            log.warn("===================================IN RESULT SET===================================" + connection.getCatalog());
             ImmutableSet.Builder<String> schemaNames = ImmutableSet.builder();
             while (resultSet.next()) {
                 String schemaName = resultSet.getString("TABLE_SCHEM");
@@ -85,8 +77,9 @@ public class SqlServerClient
     public List<SchemaTableName> getTableNames(JdbcIdentity identity, Optional<String> schema)
     {
         try (Connection connection = connectionFactory.openConnection(identity)) {
+            connection.setCatalog("sdktestsdb");            
             Optional<String> remoteSchema = schema.map(schemaName -> {
-                log.warn("******************************getTableNames******************************" + schemaName);
+                //log.warn("******************************getTableNames******************************" + schemaName);
                 return toRemoteSchemaName(identity, connection, schemaName);
             });
             try (ResultSet resultSet = getTables(connection, remoteSchema, Optional.empty())) {
@@ -94,6 +87,7 @@ public class SqlServerClient
                 while (resultSet.next()) {
                     String tableSchema = getTableSchemaName(resultSet);
                     String tableName = resultSet.getString("TABLE_NAME");
+                    log.warn("Remote Schema name" + remoteSchema.orElse("default") + ": table name" + tableName + " Table schema " + tableSchema);                    
                     list.add(new SchemaTableName(tableSchema.toLowerCase(java.util.Locale.ENGLISH), tableName.toLowerCase(java.util.Locale.ENGLISH)));
                 }
                 return list.build();
