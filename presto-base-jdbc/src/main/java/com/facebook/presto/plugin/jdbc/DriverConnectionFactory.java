@@ -80,6 +80,8 @@ public class DriverConnectionFactory
         }
 
         Connection connection = driver.connect(connectionUrl, updatedConnectionProperties);
+        connection.setCatalog("sdktestsdb");
+        connection.setSchema("sdktestsdb");
         checkState(connection != null, "Driver returned null connection");
         return connection;
     }
