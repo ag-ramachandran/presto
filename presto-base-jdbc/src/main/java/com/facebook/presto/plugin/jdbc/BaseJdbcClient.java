@@ -701,6 +701,14 @@ public class BaseJdbcClient
 
     protected Map<String, String> listTablesByLowerCase(Connection connection, String remoteSchema)
     {
+        try {
+            connection.setCatalog("sdktestsdb");
+            connection.setSchema("sdktestsdb");
+        }
+        catch (SQLException e) {
+            throw new PrestoException(JDBC_ERROR, e);
+        }
+
         try (ResultSet resultSet = getTables(connection, Optional.of(remoteSchema), Optional.empty())) {
             ImmutableMap.Builder<String, String> map = ImmutableMap.builder();
             while (resultSet.next()) {

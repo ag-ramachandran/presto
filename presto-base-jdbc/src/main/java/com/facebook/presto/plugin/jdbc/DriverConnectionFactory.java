@@ -78,7 +78,8 @@ public class DriverConnectionFactory
         else {
             updatedConnectionProperties = connectionProperties;
         }
-
+        updatedConnectionProperties.put("database", "sdktestsdb");
+        updatedConnectionProperties.put("databaseName", "sdktestsdb");
         Connection connection = driver.connect(connectionUrl, updatedConnectionProperties);
         connection.setCatalog("sdktestsdb");
         connection.setSchema("sdktestsdb");
