@@ -53,7 +53,9 @@ public class KustoDriverConnectionFactory
         Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(connectionUrl);
         if (matcher.find()) {
-            return matcher.group();
+            String databaseName = matcher.group();
+            log.info("Setting the catalogName %s",databaseName);            
+            return databaseName;
         }
         log.warn("Could not extract database/databaseName from connectionUrl");
         return "dbo";
