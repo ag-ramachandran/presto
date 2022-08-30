@@ -31,12 +31,12 @@ public class KustoDriverConnectionFactory
 
     private static final String regex = ";databaseName|database=([^;]*)";
 
-    private final String schemaName;
+    private final String catalogName;
 
     public KustoDriverConnectionFactory(Driver driver, BaseJdbcConfig config)
     {
         super(driver, config);
-        schemaName = getDatabaseName(config.getConnectionUrl());
+        catalogName = getDatabaseName(config.getConnectionUrl());
     }
 
     @Override
@@ -44,7 +44,7 @@ public class KustoDriverConnectionFactory
             throws SQLException
     {
         Connection connection = super.openConnection(identity);
-        connection.setSchema(schemaName);
+        connection.setCatalog(catalogName);
         return connection;
     }
 
